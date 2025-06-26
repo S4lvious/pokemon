@@ -1,0 +1,3 @@
+Charmander,5,20,20,10,12
+Bulbasaur,5,10,10,10,15
+Bulbasaur,5,10,10,10,15
