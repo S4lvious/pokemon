@@ -4,7 +4,12 @@ import javax.swing.*;
 
 public class GameWindow extends JFrame {
 
-    public GameWindow() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public GameWindow() {
         setTitle("Pokemon Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);

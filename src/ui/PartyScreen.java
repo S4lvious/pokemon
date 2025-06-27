@@ -10,7 +10,11 @@ import java.util.List;
 
 public class PartyScreen extends JPanel {
 
-    private Player player;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Player player;
     private int selectedIndex = 0;
     private int swapIndex = -1;
 

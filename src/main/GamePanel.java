@@ -17,7 +17,11 @@ import java.awt.image.BufferedImage;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    public static final int TILE_SIZE = 32;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public static final int TILE_SIZE = 32;
     public static final int SCALE = 2;
     public static final int WIDTH = TILE_SIZE * 16;
     public static final int HEIGHT = TILE_SIZE * 12;
