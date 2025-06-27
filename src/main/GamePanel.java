@@ -12,8 +12,11 @@ import entities.Pokemon;
 import ui.PartyScreen;
 import utils.SpriteLoader;
 import engine.InputHandler;
+import engine.LocalizationManager;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+
+
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -29,7 +32,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private boolean isMenuOpen = false;
     private int menuSelection = 0;
-    private final String[] menuOptions = {"Pokemon", "Save", "Esci"}; //Aggiunta uscita
+    private String[] menuOptions; // Ora è dinamico
     
     private int cameraX = 0;
     private int cameraY = 0;
@@ -83,11 +86,23 @@ public class GamePanel extends JPanel implements Runnable {
         setBackground(Color.BLACK);
         setFocusable(true);
         requestFocusInWindow();
+        
+        loadLocalizedTexts(); // <-- AGGIUNGI QUESTA RIGA
+        
         startGameLoop();
-
     }
 
-    public InputHandler getInput() {
+    private void loadLocalizedTexts() {
+    	LocalizationManager lm = LocalizationManager.getInstance();
+        menuOptions = new String[] {
+            lm.getString("menu.pokemon"),
+            lm.getString("menu.save"),
+            lm.getString("menu.exit")
+        };
+		
+	}
+
+	public InputHandler getInput() {
         return input;
     }
     
@@ -213,65 +228,56 @@ public void startGameLoop() {
         player.update();
     }
 
-private void handleMenuSelection() {
-    String selectedOption = menuOptions[menuSelection];
-    switch (selectedOption) {
-        case "Pokemon":
-            JFrame partyFrame = new JFrame("Il tuo Party");
+    private void handleMenuSelection() {
+        String selectedOption = menuOptions[menuSelection];
+        LocalizationManager lm = LocalizationManager.getInstance(); // Otteniamo un'istanza per i messaggi
+
+        // Lo switch funziona perché confronta le stringhe già tradotte
+        if (selectedOption.equals(lm.getString("menu.pokemon"))) {
+            JFrame partyFrame = new JFrame(lm.getString("party.title")); // Titolo localizzato
             partyFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             partyFrame.setSize(400, 400);
             partyFrame.setLocationRelativeTo(null);
             partyFrame.add(new PartyScreen(player));
             partyFrame.setVisible(true);
             isMenuOpen = false;
-            lastMenuToggleTime = System.currentTimeMillis(); // Aggiorna il tempo dell'ultimo toggle del menu
+            lastMenuToggleTime = System.currentTimeMillis();
             input.reset();
-            break;
-        case "Save":
+
+        } else if (selectedOption.equals(lm.getString("menu.save"))) {
             player.savePartyToFile("party.txt");
-            JOptionPane.showMessageDialog(this, "Gioco salvato con successo!");
+            JOptionPane.showMessageDialog(this, lm.getString("save.success"));
+            isMenuOpen = false; // Aggiunto per chiudere il menu dopo il salvataggio
             input.reset();
-            break;
-        case "Esci":
-            // 1. Chiediamo all'utente se vuole salvare prima di uscire.
+
+        } else if (selectedOption.equals(lm.getString("menu.exit"))) {
             int saveChoice = JOptionPane.showConfirmDialog(
                 this,
-                "Vuoi salvare la partita prima di uscire?",
-                "Uscita",
+                lm.getString("exit.confirm.save"), // Messaggio localizzato
+                lm.getString("menu.exit"), // Titolo localizzato
                 JOptionPane.YES_NO_OPTION
             );
 
-            // 2. Analizziamo la scelta.
             if (saveChoice == JOptionPane.YES_OPTION) {
-                // Se l'utente sceglie "Sì", salviamo e usciamo.
                 player.savePartyToFile("party.txt");
-                System.exit(0); // Termina l'applicazione
+                System.exit(0);
             } else if (saveChoice == JOptionPane.NO_OPTION) {
-                // Se l'utente sceglie "No", chiediamo un'ulteriore conferma.
                 int confirmExitChoice = JOptionPane.showConfirmDialog(
                     this,
-                    "Sei sicuro di voler uscire senza salvare? I progressi non salvati andranno persi.",
-                    "Conferma Uscita",
+                    lm.getString("exit.confirm.nosave"), // Messaggio localizzato
+                    lm.getString("exit.confirm.title"), // Chiave aggiuntiva per il titolo di conferma
                     JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE // Aggiunge un'icona di avvertimento
+                    JOptionPane.WARNING_MESSAGE
                 );
 
                 if (confirmExitChoice == JOptionPane.YES_OPTION) {
-                    // Se l'utente conferma di voler uscire senza salvare, terminiamo.
                     System.exit(0);
                 }
-                // Se sceglie "No" alla seconda domanda, non facciamo nulla.
-                // La finestra di dialogo si chiude e il gioco continua.
             }
-            // Se l'utente chiude la prima finestra, non succede nulla.
-            
-            isMenuOpen = false; // In ogni caso, chiudiamo il menu dopo l'interazione.
+            isMenuOpen = false;
             input.reset();
-            break;
-        default:
-            break;
+        }
     }
-}
 
 
     @Override

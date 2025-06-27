@@ -3,6 +3,8 @@ package ui;
 import entities.Player;
 import entities.Pokemon;
 
+import engine.LocalizationManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -64,8 +66,11 @@ public class PartyScreen extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+        
+        // Otteniamo un'istanza del nostro gestore di localizzazione
+        LocalizationManager lm = LocalizationManager.getInstance();
         List<Pokemon> party = player.getParty();
+
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -75,18 +80,25 @@ public class PartyScreen extends JPanel {
             int y = 50 + i * 50;
             if (i == selectedIndex) {
                 g.setColor(Color.YELLOW);
-                g.fillRect(40, y - 20, 300, 40);
+                g.fillRect(40, y - 20, getWidth() - 80, 40); // Larghezza dinamica
             }
             g.setColor(Color.BLACK);
-            g.drawString(p.getName() + "  Lv." + p.getLevel() + "  HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), 50, y);
+            
+            // Costruiamo la stringa di stato del Pokémon usando le chiavi localizzate
+            String pokemonStatus = String.format("%s  %s%d  %s %d/%d",
+                p.getName(),
+                lm.getString("party.levelAbbr"), p.getLevel(),
+                lm.getString("party.hpLabel"), p.getCurrentHp(), p.getMaxHp()
+            );
+            g.drawString(pokemonStatus, 50, y);
         }
 
         if (swapIndex != -1) {
             g.setColor(Color.RED);
-            g.drawString("Seleziona Pokémon da scambiare...", 50, getHeight() - 50);
+            g.drawString(lm.getString("party.swapPrompt"), 50, getHeight() - 50);
         } else {
             g.setColor(Color.GRAY);
-            g.drawString("Z/Enter: Seleziona | X/Esc: Esci", 50, getHeight() - 50);
+            g.drawString(lm.getString("party.controls"), 50, getHeight() - 50);
         }
     }
 }
