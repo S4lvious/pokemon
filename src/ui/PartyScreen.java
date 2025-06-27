@@ -37,8 +37,10 @@ public class PartyScreen extends JPanel {
             case KeyEvent.VK_DOWN:
                 if (selectedIndex < party.getSize() - 1) selectedIndex++;
                 break;
-            case KeyEvent.VK_Z:
-            case KeyEvent.VK_ENTER:
+            // Risolto il bug per cui funzionava una key sola.
+            // La sintassi corretta (e ora aggiornata) è la seguente:
+            // case condizione1, condizione2, ...:
+            case KeyEvent.VK_Z, KeyEvent.VK_ENTER:
                 if (swapIndex == -1) {
                     swapIndex = selectedIndex;
                 } else {
@@ -47,8 +49,8 @@ public class PartyScreen extends JPanel {
                     swapIndex = -1;
                 }
                 break;
-            case KeyEvent.VK_X:
-            case KeyEvent.VK_ESCAPE:
+            // Anche qui la sintassi andava aggiornata.
+            case KeyEvent.VK_X, KeyEvent.VK_ESCAPE:
                 // Chiudi lo screen
                 SwingUtilities.getWindowAncestor(this).dispose();
                 break;

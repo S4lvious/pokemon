@@ -142,60 +142,58 @@ public class BattleScreen extends JPanel {
         repaint();
     }
 
+    private void updateCaptureAnimation(Graphics2D g2d) {
+            long now = System.currentTimeMillis();
+            int spriteWidth = 250;
+            int spriteHeight = 250;
 
-        private void updateCaptureAnimation(Graphics2D g2d) {
-                long now = System.currentTimeMillis();
-                int spriteWidth = 250;
-                int spriteHeight = 250;
+            int trainerX = 30;
+            int trainerY = getHeight() - spriteHeight;
+            int pokeballX = getWidth() - 250;
+            int pokeballY = 250;
+            boolean captureSuccessful = false;
 
-                int trainerX = 30;
-                int trainerY = getHeight() - spriteHeight;
-                int pokeballX = getWidth() - 250;
-                int pokeballY = 250;
-                boolean captureSuccessful = false;
+        switch (captureStep) {
+            case 0: // mostra allenatore che lancia
+                int frameIndex = (int) ((now - captureTimer) / 150) % trainerThrowSprites.length;
+                if (frameIndex == 0 && !hidePokemon) {
+                    hidePokemon = true;
+                }
+                g2d.drawImage(trainerThrowSprites[frameIndex], trainerX, trainerY, spriteWidth, spriteHeight, null);
 
-            switch (captureStep) {
-                case 0: // mostra allenatore che lancia
-                    int frameIndex = (int) ((now - captureTimer) / 150) % trainerThrowSprites.length;
-                    if (frameIndex == 0 && !hidePokemon) {
-                        hidePokemon = true; 
+                if (now - captureTimer > 600) {
+                    captureStep++;
+                    captureTimer = now;
+                }
+                break;
+            case 1: // mostra pokeball in volo
+                g2d.drawImage(pokeballSprite, pokeballX - 50, pokeballY - 100, 64, 64, null);
+                if (now - captureTimer > 500) {
+                    captureStep++;
+                    captureTimer = now;
+                    hideEnemyPokemon = true;
+                }
+                break;
+
+            case 2: // pokémon scompare, pokéball a terra
+                g2d.drawImage(groundPokeballSprite, pokeballX, pokeballY, 64, 64, null);
+                if (now - captureTimer > 700) {
+                    captureStep++;
+                    captureTimer = now;
+                    captureSuccessful = Math.random() < 0.6; // probabilità di cattura
+                    if (captureSuccessful) {
+                        player.getParty().addPokemon(battle.getEnemyPokemon());
+                        endMessage = "Hai catturato " + battle.getEnemyPokemon().getName() + "!";
+                        battleOver = true;
+                    } else {
+                        endMessage = "Oh no! Il Pokémon è fuggito!"; // Per semplificare.
+                        battleOver = true;
                     }
-                    g2d.drawImage(trainerThrowSprites[frameIndex], trainerX, trainerY, spriteWidth, spriteHeight, null);
-                    
-                    if (now - captureTimer > 600) {
-                        captureStep++;
-                        captureTimer = now;
-                    }
-                    break;
-                case 1: // mostra pokeball in volo
-                    g2d.drawImage(pokeballSprite, pokeballX - 50, pokeballY - 100, 64, 64, null);
-                    if (now - captureTimer > 500) {
-                        captureStep++;
-                        captureTimer = now;
-                        hideEnemyPokemon = true; 
-                    }
-                    break;
-
-                case 2: // pokémon scompare, pokéball a terra
-                    g2d.drawImage(groundPokeballSprite, pokeballX, pokeballY, 64, 64, null);
-                    if (now - captureTimer > 700) {
-                        captureStep++;
-                        captureTimer = now;
-                        captureSuccessful = Math.random() < 0.6; // probabilità di cattura
-                        if (captureSuccessful) {
-                            player.getParty().addPokemon(battle.getEnemyPokemon());
-                            endMessage = "Hai catturato " + battle.getEnemyPokemon().getName() + "!";
-                            battleOver = true;
-
-                        } else {
-                            endMessage = "Oh no! Il Pokémon è fuggito!"; // Per semplificare.
-                            battleOver = true;
-
-                        }
-                    }
-                    break;
-            }
+                }
+                break;
         }
+    }
+
     private void returnToGame() {
         
         saveParty();
