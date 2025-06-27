@@ -158,6 +158,15 @@ public class Player {
 
         moving = true;
     }
+    
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public void setDirection(Direction direction, boolean facingLeft) {
+        this.direction = direction;
+        this.facingLeft = facingLeft;
+    }
 
     public long getLastMoveTime() {
         return lastMoveTime;

@@ -23,8 +23,8 @@ public class GamePanel extends JPanel implements Runnable {
 	private static final long serialVersionUID = 1L;
 	public static final int TILE_SIZE = 32;
 	public static final int SCALE = 2;
-	public static final int WIDTH = TILE_SIZE * 8; // Ridotto da 16 a 8
-	public static final int HEIGHT = TILE_SIZE * 6; // Ridotto da 12 a 6
+	public static final int WIDTH = 240; // Dimensioni GBA-Like
+	public static final int HEIGHT = 160; // Dimensioni GBA-Like
 	public static final int FPS = 60;
 
     private boolean isMenuOpen = false;
@@ -148,47 +148,37 @@ public void startGameLoop() {
                 return;
             }
         if (now - player.getLastMoveTime() >= player.getMoveCooldown()) {
+            int dx = 0;
+            int dy = 0;
+
             if (input.isPressed(KeyEvent.VK_UP)) {
+                player.setDirection(Player.Direction.UP);
                 if (worldMap.isWalkable(player.x, player.y - 1)) {
-                    player.move(0, -1);
-                    player.setLastMoveTime(now);
-                    mooved = true;
+                    dy = -1;
                 }
             } else if (input.isPressed(KeyEvent.VK_DOWN)) {
+                player.setDirection(Player.Direction.DOWN);
                 if (worldMap.isWalkable(player.x, player.y + 1)) {
-                    player.move(0, 1);
-                    player.setLastMoveTime(now);
-                    mooved = true;
+                   dy = 1;
                 }
             } else if (input.isPressed(KeyEvent.VK_LEFT)) {
+                player.setDirection(Player.Direction.SIDE, true);
                 if (worldMap.isWalkable(player.x - 1, player.y)) {
-                    player.move(-1, 0);
-                    player.setLastMoveTime(now);
-                    mooved = true;
+                    dx = -1;
                 }
             } else if (input.isPressed(KeyEvent.VK_RIGHT)) {
+                player.setDirection(Player.Direction.SIDE, false);
                 if (worldMap.isWalkable(player.x + 1, player.y)) {
-                    player.move(1, 0);
-                    player.setLastMoveTime(now);
-                    mooved = true;
+                    dx = 1;
                 }
             }
 
-                if (mooved) {
-                cameraX = player.x * TILE_SIZE * SCALE - WIDTH / 2;
-                cameraY = player.y * TILE_SIZE * SCALE - HEIGHT / 2;
+            if (dx != 0 || dy != 0) {
+                player.move(dx, dy);
                 player.setLastMoveTime(now);
+
                 if (worldMap.isGrassTile(player.x, player.y)) {
-                    double pokemonEncounterChance = 0.2;
-                    if (Math.random() < pokemonEncounterChance) {
-                        inBattle = true;
-                        Pokemon wildPokemon = new Pokemon("Bulbasaur", 5, 10, 10, 10, 15);
-                        Pokemon playerPokemon = player.getParty().get(0); // Prende il primo Pokémon della squadra del giocatore
-                        BattleManager battleManager = new BattleManager(window, this, player);
-                        battleManager.startBattle(playerPokemon, wildPokemon);
-
-                    }
-
+                    // ... (logica incontro Pokémon)
                 }
             }
         }
