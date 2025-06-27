@@ -22,10 +22,10 @@ public class GamePanel extends JPanel implements Runnable {
 	 */
 	private static final long serialVersionUID = 1L;
 	public static final int TILE_SIZE = 32;
-    public static final int SCALE = 2;
-    public static final int WIDTH = TILE_SIZE * 16;
-    public static final int HEIGHT = TILE_SIZE * 12;
-    public static final int FPS = 60;
+	public static final int SCALE = 2;
+	public static final int WIDTH = TILE_SIZE * 8; // Ridotto da 16 a 8
+	public static final int HEIGHT = TILE_SIZE * 6; // Ridotto da 12 a 6
+	public static final int FPS = 60;
 
     private boolean isMenuOpen = false;
     private int menuSelection = 0;
@@ -93,8 +93,8 @@ public void startGameLoop() {
     if (gameThread == null || !gameThread.isAlive()) {
         InputHandler input = new InputHandler();
         addKeyListener(input);
-        cameraX = player.x * TILE_SIZE * SCALE - WIDTH / 2;
-        cameraY = player.y * TILE_SIZE * SCALE - HEIGHT / 2;
+        cameraX = player.x * TILE_SIZE * SCALE - (WIDTH * SCALE) / 2;
+        cameraY = player.y * TILE_SIZE * SCALE - (HEIGHT * SCALE) / 2;
         setBackground(Color.BLACK);
         setFocusable(true);
         requestFocusInWindow();
