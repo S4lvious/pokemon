@@ -29,8 +29,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     private boolean isMenuOpen = false;
     private int menuSelection = 0;
-    private final String[] menuOptions = {"Pokemon", "Save"};
-
+    private final String[] menuOptions = {"Pokemon", "Save", "Esci"}; //Aggiunta uscita
+    
     private int cameraX = 0;
     private int cameraY = 0;
 
@@ -51,6 +51,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     private long lastMenuToggleTime = 0;
     private final long menuToogleCooldown = 200; 
+    
+    private long lastMenuNavTime = 0; // Memorizza l'ora dell'ultima navigazione
+    private final long menuNavCooldown = 150; // Cooldown in millisecondi (prova 150-200)
 
     boolean inBattle = false;
     public void setInBattle(boolean inBattle) {
@@ -139,7 +142,7 @@ public void startGameLoop() {
         }
         
         if (isMenuOpen) {
-            if (input.isPressed(KeyEvent.VK_DOWN)) {
+            /*if (input.isPressed(KeyEvent.VK_DOWN)) {
                 menuSelection = (menuSelection + 1) % menuOptions.length;
             } else if (input.isPressed(KeyEvent.VK_UP)) {
                 menuSelection = (menuSelection - 1 + menuOptions.length) % menuOptions.length;
@@ -149,6 +152,22 @@ public void startGameLoop() {
             // Quando il menu è aperto, il giocatore non si muove e non si anima
             player.setMoving(false);
             player.update();
+            return;*/ //Vecchia logica
+        	
+            if (now - lastMenuNavTime > menuNavCooldown) { // Controlliamo se il cooldown è passato
+                if (input.isPressed(KeyEvent.VK_DOWN)) {
+                    menuSelection = (menuSelection + 1) % menuOptions.length;
+                    lastMenuNavTime = now; // IMPORTANTE: Resettiamo il timer del cooldown
+                } else if (input.isPressed(KeyEvent.VK_UP)) {
+                    menuSelection = (menuSelection - 1 + menuOptions.length) % menuOptions.length;
+                    lastMenuNavTime = now; // IMPORTANTE: Resettiamo il timer del cooldown
+                }
+            }
+            
+            // La gestione della selezione con 'Z' non ha bisogno di cooldown.
+            if (input.isPressed(KeyEvent.VK_Z)) {
+                handleMenuSelection();
+            }
             return;
         }
 
@@ -213,6 +232,42 @@ private void handleMenuSelection() {
             JOptionPane.showMessageDialog(this, "Gioco salvato con successo!");
             input.reset();
             break;
+        case "Esci":
+            // 1. Chiediamo all'utente se vuole salvare prima di uscire.
+            int saveChoice = JOptionPane.showConfirmDialog(
+                this,
+                "Vuoi salvare la partita prima di uscire?",
+                "Uscita",
+                JOptionPane.YES_NO_OPTION
+            );
+
+            // 2. Analizziamo la scelta.
+            if (saveChoice == JOptionPane.YES_OPTION) {
+                // Se l'utente sceglie "Sì", salviamo e usciamo.
+                player.savePartyToFile("party.txt");
+                System.exit(0); // Termina l'applicazione
+            } else if (saveChoice == JOptionPane.NO_OPTION) {
+                // Se l'utente sceglie "No", chiediamo un'ulteriore conferma.
+                int confirmExitChoice = JOptionPane.showConfirmDialog(
+                    this,
+                    "Sei sicuro di voler uscire senza salvare? I progressi non salvati andranno persi.",
+                    "Conferma Uscita",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE // Aggiunge un'icona di avvertimento
+                );
+
+                if (confirmExitChoice == JOptionPane.YES_OPTION) {
+                    // Se l'utente conferma di voler uscire senza salvare, terminiamo.
+                    System.exit(0);
+                }
+                // Se sceglie "No" alla seconda domanda, non facciamo nulla.
+                // La finestra di dialogo si chiude e il gioco continua.
+            }
+            // Se l'utente chiude la prima finestra, non succede nulla.
+            
+            isMenuOpen = false; // In ogni caso, chiudiamo il menu dopo l'interazione.
+            input.reset();
+            break;
         default:
             break;
     }
@@ -259,20 +314,55 @@ private void handleMenuSelection() {
 
         player.draw(g, SCALE);
         g.translate(cameraX, cameraY); 
-                if (isMenuOpen) {
+        if (isMenuOpen) {
+            // --- NUOVA LOGICA PER MENU DINAMICO ---
+
+            // 1. Definiamo i margini e le spaziature interne per un look pulito.
+            int padding = 10; // Spazio tra il testo e i bordi del menu
+            int lineSpacing = 5; // Spazio extra tra le opzioni del menu
+
+            // 2. Otteniamo gli strumenti per misurare il nostro font.
+            FontMetrics fm = g.getFontMetrics();
+            int lineHeight = fm.getHeight(); // Altezza di una singola riga di testo
+
+            // 3. Calcoliamo la larghezza necessaria per il menu.
+            int menuWidth = 0;
+            for (String option : menuOptions) {
+                int optionWidth = fm.stringWidth(option);
+                if (optionWidth > menuWidth) {
+                    menuWidth = optionWidth; // Troviamo la larghezza del testo più lungo
+                }
+            }
+            menuWidth += padding * 2; // Aggiungiamo il padding a sinistra e a destra
+
+            // 4. Calcoliamo l'altezza totale del menu.
+            int menuHeight = (lineHeight * menuOptions.length) // Altezza di tutti i testi
+                             + (lineSpacing * (menuOptions.length - 1)) // Spazio tra le righe
+                             + (padding * 2); // Aggiungiamo il padding sopra e sotto
+
+            // 5. Calcoliamo la posizione del menu sullo schermo (in alto a destra).
+            int menuX = getWidth() - menuWidth - 10; // 10 è un margine dal bordo destro dello schermo
+            int menuY = 10; // Margine dal bordo superiore
+
+            // 6. Disegniamo lo sfondo e il bordo del menu usando le nostre dimensioni calcolate.
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(WIDTH * SCALE - 160, 40, 140, 60);
+            g.fillRect(menuX, menuY, menuWidth, menuHeight);
 
             g.setColor(Color.WHITE);
-            g.drawRect(WIDTH * SCALE - 160, 40, 140, 60);
+            g.drawRect(menuX, menuY, menuWidth, menuHeight);
 
+            // 7. Disegniamo le opzioni del menu.
             for (int i = 0; i < menuOptions.length; i++) {
                 if (i == menuSelection) {
-                    g.setColor(Color.YELLOW);
+                    g.setColor(Color.YELLOW); // Colore per l'opzione selezionata
                 } else {
                     g.setColor(Color.WHITE);
                 }
-                g.drawString(menuOptions[i], WIDTH * SCALE - 150, 60 + i * 20);
+
+                // Calcoliamo la posizione Y di ogni opzione
+                int textY = menuY + padding + fm.getAscent() + (i * (lineHeight + lineSpacing));
+                
+                g.drawString(menuOptions[i], menuX + padding, textY);
             }
         }
     }
