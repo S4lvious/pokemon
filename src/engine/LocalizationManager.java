@@ -14,7 +14,7 @@ public class LocalizationManager {
     // 2. Costruttore privato per impedire la creazione di altre istanze
     private LocalizationManager() {
         // Impostiamo una lingua di default all'avvio
-        setLocale(new Locale("en", "US"));
+    	setLocale(Locale.of("it", "IT"));
     }
 
     // 3. Metodo pubblico per ottenere l'unica istanza
