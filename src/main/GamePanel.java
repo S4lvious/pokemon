@@ -57,7 +57,6 @@ public class GamePanel extends JPanel implements Runnable {
         this.window = window;
         worldMap = new WorldMap(30, 20);
         player = new Player(4, 6, TILE_SIZE);
-        player.loadPartyFromFile("party.txt");
         input = new InputHandler();
         addKeyListener(input);
         setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
@@ -179,7 +178,7 @@ public void startGameLoop() {
                     if (Math.random() < pokemonEncounterChance) {
                         inBattle = true;
                         Pokemon wildPokemon = new Pokemon("Bulbasaur", 5, 10, 10, 10, 15);
-                        Pokemon playerPokemon = player.getParty().get(0); // Prende il primo Pokémon della squadra del giocatore
+                        Pokemon playerPokemon = player.getParty().getFirst(); // Prende il primo Pokémon della squadra del giocatore
                         BattleManager battleManager = new BattleManager(window, this, player);
                         battleManager.startBattle(playerPokemon, wildPokemon);
 
@@ -206,7 +205,7 @@ private void handleMenuSelection() {
             input.reset();
             break;
         case "Save":
-            player.savePartyToFile("party.txt");
+            player.getParty().save();
             JOptionPane.showMessageDialog(this, "Gioco salvato con successo!");
             input.reset();
             break;

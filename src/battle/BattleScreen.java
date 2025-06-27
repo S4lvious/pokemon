@@ -102,7 +102,7 @@ public class BattleScreen extends JPanel {
 
     private void saveParty() {
         try {
-            player.savePartyToFile("party.txt");
+            player.getParty().save();
             System.out.println("Squadra salvata con successo!");
         } catch (Exception e) {
             System.err.println("Errore nel salvare la squadra: " + e.getMessage());
@@ -183,7 +183,7 @@ public class BattleScreen extends JPanel {
                         captureTimer = now;
                         captureSuccessful = Math.random() < 0.6; // probabilità di cattura
                         if (captureSuccessful) {
-                            player.addPokemonToParty(battle.getEnemyPokemon());
+                            player.getParty().addPokemon(battle.getEnemyPokemon());
                             endMessage = "Hai catturato " + battle.getEnemyPokemon().getName() + "!";
                             battleOver = true;
 

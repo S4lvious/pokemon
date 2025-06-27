@@ -1,5 +1,6 @@
 package ui;
 
+import entities.Party;
 import entities.Player;
 import entities.Pokemon;
 
@@ -27,14 +28,14 @@ public class PartyScreen extends JPanel {
     }
 
     private void handleInput(int keyCode) {
-        List<Pokemon> party = player.getParty();
+        Party party = player.getParty();
 
         switch (keyCode) {
             case KeyEvent.VK_UP:
                 if (selectedIndex > 0) selectedIndex--;
                 break;
             case KeyEvent.VK_DOWN:
-                if (selectedIndex < party.size() - 1) selectedIndex++;
+                if (selectedIndex < party.getSize() - 1) selectedIndex++;
                 break;
             case KeyEvent.VK_Z:
             case KeyEvent.VK_ENTER:
@@ -42,9 +43,7 @@ public class PartyScreen extends JPanel {
                     swapIndex = selectedIndex;
                 } else {
                     // Swap Pokémon
-                    Pokemon temp = party.get(swapIndex);
-                    party.set(swapIndex, party.get(selectedIndex));
-                    party.set(selectedIndex, temp);
+                    party.swap(swapIndex, selectedIndex);
                     swapIndex = -1;
                 }
                 break;
@@ -61,13 +60,13 @@ public class PartyScreen extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        List<Pokemon> party = player.getParty();
+        Party party = player.getParty();
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        for (int i = 0; i < party.size(); i++) {
-            Pokemon p = party.get(i);
+        int i = 0;
+        for (Pokemon p : party.getExplicitParty()) {
             int y = 50 + i * 50;
             if (i == selectedIndex) {
                 g.setColor(Color.YELLOW);
@@ -75,6 +74,7 @@ public class PartyScreen extends JPanel {
             }
             g.setColor(Color.BLACK);
             g.drawString(p.getName() + "  Lv." + p.getLevel() + "  HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), 50, y);
+            i++;
         }
 
         if (swapIndex != -1) {

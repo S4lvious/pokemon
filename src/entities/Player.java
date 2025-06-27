@@ -10,11 +10,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import main.Constants;
 import utils.SpriteLoader;
 
 public class Player {
     public int x, y;
     public final int tileSize;
+
+    private final Party party;
 
     private BufferedImage[][] sprites;
     private int currentFrame = 0;
@@ -29,6 +32,7 @@ public class Player {
     private long lastMoveTime = 0;
     private final long moveDelay = 100;
 
+
     public enum Direction {
         UP, DOWN, SIDE
     }
@@ -38,72 +42,21 @@ public class Player {
         this.y = y;
         this.tileSize = tileSize;
         loadSprites();
-    }
 
+        System.out.println(Constants.MAINPARTYFILE);
 
-    private List<Pokemon> party = new ArrayList<Pokemon>();
-
-
-    public void addPokemonToParty(Pokemon pokemon) {
-        if (party.size() < 6) {
-            party.add(pokemon);
-        } else {
-            System.out.println("La tua squadra è piena!");
-        }
-    }
-
-    public List<Pokemon> getParty() {
-        return party;
-    }
-
-
-    public void savePartyToFile(String filename) {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter("src/assets/saves/" + filename))) {
-            for (Pokemon p : party) {
-           String line = String.join(",",
-                    p.getName(),
-                    String.valueOf(p.getLevel()),
-                    String.valueOf(p.getMaxHp()),
-                    String.valueOf(p.getCurrentHp()),
-                    String.valueOf(p.getAttack()),
-                    String.valueOf(p.getSpeed())
-                );
-                writer.write(line);
-                writer.newLine();
-            
-            }
-            System.out.println("Squadra salvata in " + filename);
-        } catch (Exception e) {
-            System.err.println("Errore nel salvare la squadra: " + e.getMessage());
-
-        }
-    }
-
-        public void loadPartyFromFile(String filename) {
-        party.clear();
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/assets/saves/" + filename))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 6) {
-                    String name = parts[0];
-                    int level = Integer.parseInt(parts[1]);
-                    int maxHp = Integer.parseInt(parts[2]);
-                    int currentHp = Integer.parseInt(parts[3]);
-                    int attack = Integer.parseInt(parts[4]);
-                    int speed = Integer.parseInt(parts[5]);
-
-                    Pokemon p = new Pokemon(name, level, maxHp, attack, speed, speed);
-                    p.setCurrentHp(currentHp);
-                    addPokemonToParty(p);
-                }
-            }
-            System.out.println("Squadra caricata da: " + filename);
+        try {
+            this.party = new Party(Constants.MAINPARTYFILE);
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
+
+    public Party getParty() {
+        return party;
+    }
 
     private void loadSprites() {
         BufferedImage spriteSheet = SpriteLoader.load("../assets/sprites/player.png");
