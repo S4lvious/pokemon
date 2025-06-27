@@ -3,15 +3,15 @@ package world;
 import java.util.Set;
 
 public class WorldMap {
-    public final int width;
-    public final int height;
+	 public final int width; // Larghezza della mappa in tile
+	 public final int height; // Altezza della mappa in tile
 
     public int[][] groundLayer;
     public int[][] overlayLayer;
     public boolean[][] collisionMap;
     private Set<Integer> grassTileIds;
 
-    public WorldMap(int width, int height) {
+    public WorldMap(int width, int height) { //Dimensioni mappa
         this.width = width;
         this.height = height;
 

@@ -13,7 +13,11 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class BattleScreen extends JPanel {
-    private final Battle battle;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private final Battle battle;
     private final String[] menu = { "Attacca", "Fuggi", "Cattura" };
     private final Player player;
     private int selected = 0;
@@ -70,7 +74,12 @@ public class BattleScreen extends JPanel {
     private void setupInput() {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("UP"), "up");
         getActionMap().put("up", new AbstractAction() {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public void actionPerformed(ActionEvent e) {
                 selected = (selected - 1 + menu.length) % menu.length;
                 repaint();
@@ -79,7 +88,12 @@ public class BattleScreen extends JPanel {
 
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("DOWN"), "down");
         getActionMap().put("down", new AbstractAction() {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public void actionPerformed(ActionEvent e) {
                 selected = (selected + 1) % menu.length;
                 repaint();
@@ -88,7 +102,12 @@ public class BattleScreen extends JPanel {
 
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ENTER"), "enter");
         getActionMap().put("enter", new AbstractAction() {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public void actionPerformed(ActionEvent e) {
                 if (battleOver) {
                     returnToGame(); // torna solo dopo aver visto il messaggio
@@ -102,7 +121,7 @@ public class BattleScreen extends JPanel {
 
     private void saveParty() {
         try {
-            player.savePartyToFile("party.txt");
+        	player.getParty().saveToFile();
             System.out.println("Squadra salvata con successo!");
         } catch (Exception e) {
             System.err.println("Errore nel salvare la squadra: " + e.getMessage());
@@ -183,7 +202,7 @@ public class BattleScreen extends JPanel {
                         captureTimer = now;
                         captureSuccessful = Math.random() < 0.6; // probabilità di cattura
                         if (captureSuccessful) {
-                            player.addPokemonToParty(battle.getEnemyPokemon());
+                        	player.getParty().addPokemon(battle.getEnemyPokemon());
                             endMessage = "Hai catturato " + battle.getEnemyPokemon().getName() + "!";
                             battleOver = true;
 
@@ -201,7 +220,7 @@ public class BattleScreen extends JPanel {
         saveParty();
 
         parentPanel.setInBattle(false);
-        parentPanel.getInput().reset();
+        parentPanel.resetInput(); 
         parent.setContentPane(parentPanel);
         parent.revalidate();
         parent.repaint();
