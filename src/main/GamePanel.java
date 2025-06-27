@@ -93,8 +93,8 @@ public void startGameLoop() {
     if (gameThread == null || !gameThread.isAlive()) {
         InputHandler input = new InputHandler();
         addKeyListener(input);
-        cameraX = player.x * TILE_SIZE * SCALE - (WIDTH * SCALE) / 2;
-        cameraY = player.y * TILE_SIZE * SCALE - (HEIGHT * SCALE) / 2;
+        cameraX = player.x * TILE_SIZE * SCALE - (WIDTH * SCALE) / 2 + (TILE_SIZE * SCALE) / 2;
+        cameraY = player.y * TILE_SIZE * SCALE - (HEIGHT * SCALE) / 2 + (TILE_SIZE * SCALE) / 2;
         setBackground(Color.BLACK);
         setFocusable(true);
         requestFocusInWindow();
@@ -130,58 +130,67 @@ public void startGameLoop() {
         if (inBattle) {
             return; // Non aggiorna il gioco se è in battaglia
         }
+
         long now = System.currentTimeMillis();
-        boolean mooved = false;
 
-        if ((input.isPressed(KeyEvent.VK_X) && now - lastMenuToggleTime > menuToogleCooldown) ) {
+        if (input.isPressed(KeyEvent.VK_X) && now - lastMenuToggleTime > menuToogleCooldown) {
             isMenuOpen = !isMenuOpen;
-             lastMenuToggleTime = System.currentTimeMillis();
+            lastMenuToggleTime = System.currentTimeMillis();
         }
-         if (isMenuOpen) {
-                if (input.isPressed(KeyEvent.VK_DOWN)) {
-                    menuSelection = (menuSelection + 1) % menuOptions.length;
-                } else if (input.isPressed(KeyEvent.VK_UP)) {
-                    menuSelection = (menuSelection - 1 + menuOptions.length) % menuOptions.length;
-                } else if (input.isPressed(KeyEvent.VK_Z)) {
-                    handleMenuSelection();
-                }
-                return;
+        
+        if (isMenuOpen) {
+            if (input.isPressed(KeyEvent.VK_DOWN)) {
+                menuSelection = (menuSelection + 1) % menuOptions.length;
+            } else if (input.isPressed(KeyEvent.VK_UP)) {
+                menuSelection = (menuSelection - 1 + menuOptions.length) % menuOptions.length;
+            } else if (input.isPressed(KeyEvent.VK_Z)) {
+                handleMenuSelection();
             }
-        if (now - player.getLastMoveTime() >= player.getMoveCooldown()) {
-            int dx = 0;
-            int dy = 0;
+            // Quando il menu è aperto, il giocatore non si muove e non si anima
+            player.setMoving(false);
+            player.update();
+            return;
+        }
 
-            if (input.isPressed(KeyEvent.VK_UP)) {
-                player.setDirection(Player.Direction.UP);
-                if (worldMap.isWalkable(player.x, player.y - 1)) {
-                    dy = -1;
-                }
-            } else if (input.isPressed(KeyEvent.VK_DOWN)) {
-                player.setDirection(Player.Direction.DOWN);
-                if (worldMap.isWalkable(player.x, player.y + 1)) {
-                   dy = 1;
-                }
-            } else if (input.isPressed(KeyEvent.VK_LEFT)) {
-                player.setDirection(Player.Direction.SIDE, true);
-                if (worldMap.isWalkable(player.x - 1, player.y)) {
-                    dx = -1;
-                }
-            } else if (input.isPressed(KeyEvent.VK_RIGHT)) {
-                player.setDirection(Player.Direction.SIDE, false);
-                if (worldMap.isWalkable(player.x + 1, player.y)) {
-                    dx = 1;
-                }
-            }
+        // --- NUOVA LOGICA DI MOVIMENTO ---
 
-            if (dx != 0 || dy != 0) {
-                player.move(dx, dy);
+        boolean wantsToMove = false;
+        int dx = 0;
+        int dy = 0;
+
+        // 1. Controlliamo l'input per la direzione (questo è invariato)
+        if (input.isPressed(KeyEvent.VK_UP)) {
+            player.setDirection(Player.Direction.UP);
+            wantsToMove = true;
+            dx = 0; dy = -1;
+        } else if (input.isPressed(KeyEvent.VK_DOWN)) {
+            player.setDirection(Player.Direction.DOWN);
+            wantsToMove = true;
+            dx = 0; dy = 1;
+        } else if (input.isPressed(KeyEvent.VK_LEFT)) {
+            player.setDirection(Player.Direction.SIDE, true);
+            wantsToMove = true;
+            dx = -1; dy = 0;
+        } else if (input.isPressed(KeyEvent.VK_RIGHT)) {
+            player.setDirection(Player.Direction.SIDE, false);
+            wantsToMove = true;
+            dx = 1; dy = 0;
+        }
+
+        // 2. Eseguiamo il MOVIMENTO se c'è l'intenzione E il cooldown è passato.
+        if (wantsToMove && (now - player.getLastMoveTime() >= player.getMoveCooldown())) {
+            if (worldMap.isWalkable(player.x + dx, player.y + dy)) {
+                // AGGIORNAMO IL TEMPO QUI, all'inizio del nuovo passo.
                 player.setLastMoveTime(now);
+                player.move(dx, dy);
 
                 if (worldMap.isGrassTile(player.x, player.y)) {
                     // ... (logica incontro Pokémon)
                 }
             }
         }
+
+        // 3. Aggiorniamo sempre il Player. Lui ora sa da solo se animarsi o no.
         player.update();
     }
 
@@ -217,6 +226,10 @@ private void handleMenuSelection() {
     }
 
     private void draw(Graphics2D g) {
+    	
+        // Calcola la posizione della camera per centrarla sul giocatore
+    	cameraX = player.x * TILE_SIZE * SCALE - (WIDTH * SCALE) / 2 + (TILE_SIZE * SCALE) / 2;
+        cameraY = player.y * TILE_SIZE * SCALE - (HEIGHT * SCALE) / 2 + (TILE_SIZE * SCALE) / 2;
 
         g.translate(-cameraX, -cameraY);
 

@@ -19,7 +19,7 @@ public class Player {
     private BufferedImage[][] sprites;
     private int currentFrame = 0;
     private int animationCounter = 0;
-    private int frameDelay = 12; // Puoi cambiare per renderla più lenta o veloce
+    private int frameDelay = 6; // Puoi cambiare per renderla più lenta o veloce
     private boolean animatingForward = true;
 
     private Direction direction = Direction.DOWN;
@@ -27,7 +27,7 @@ public class Player {
     private boolean facingLeft = false;
 
     private long lastMoveTime = 0;
-    private final long moveDelay = 100;
+    private final long moveDelay = 185; //Delay di movimento
 
     public enum Direction {
         UP, DOWN, SIDE
@@ -119,12 +119,16 @@ public class Player {
     }
 
     public void update() {
-        if (moving) {
+        long now = System.currentTimeMillis();
+
+        // Se è passato meno tempo di "moveDelay" dall'ultimo movimento,
+        // significa che siamo nel mezzo di un passo, quindi dobbiamo animarci.
+        if (now - lastMoveTime < moveDelay) {
             animationCounter++;
             if (animationCounter >= frameDelay) {
                 animationCounter = 0;
 
-                // Animazione ping-pong
+                // Logica di animazione ping-pong (questa è già corretta)
                 if (animatingForward) {
                     currentFrame++;
                     if (currentFrame >= 2) {
@@ -140,23 +144,27 @@ public class Player {
                 }
             }
         } else {
+            // Se il tempo del passo è finito, torniamo al frame di riposo.
             currentFrame = 1; // Idle frame centrale
         }
-
-        moving = false;
+    }
+    
+    //Nuovo metodo aggiunto
+    public void setMoving(boolean moving) {
+        this.moving = moving;
     }
 
     public void move(int dx, int dy) {
         this.x += dx;
         this.y += dy;
 
-        if (dy != 0) direction = (dy > 0) ? Direction.DOWN : Direction.UP;
-        else if (dx != 0) {
+        // La logica per la direzione va bene qui, ma NON deve esserci altro.
+        if (dy != 0) {
+            direction = (dy > 0) ? Direction.DOWN : Direction.UP;
+        } else if (dx != 0) {
             direction = Direction.SIDE;
             facingLeft = dx < 0;
         }
-
-        moving = true;
     }
     
     public void setDirection(Direction direction) {
