@@ -7,6 +7,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.event.KeyEvent;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import engine.InputHandler;
 import engine.LocalizationManager;
 import engine.models.ChoiceContext;
 import entities.Player;
+import entities.Pokemon;
 import ui.states.ChoiceState;
 import ui.states.IGameState;
 import ui.states.MainMenuState;
@@ -24,14 +26,15 @@ import ui.states.PartyScreenState;
 import ui.states.SettingsMenuState;
 import ui.states.WorldState;
 import world.WorldMap;
+import battle.BattleManager;
 
 public class GamePanel extends JPanel implements Runnable {
 
     private static final long serialVersionUID = 1L;
     public static final int TILE_SIZE = 32;
     public static final int SCALE = 2;
-    public static final int WIDTH = 240;
-    public static final int HEIGHT = 160;
+    public static final int WIDTH = TILE_SIZE * 16;
+    public static final int HEIGHT = TILE_SIZE * 12;
     public static final int FPS = 60;
 
     // --- Componenti di Gioco ---
@@ -39,6 +42,7 @@ public class GamePanel extends JPanel implements Runnable {
     private WorldMap worldMap;
     private InputHandler input;
     private Thread gameThread;
+	private GameWindow window;
 
     // --- Gestione Stati ---
     private Map<GameState, IGameState> gameStates;
@@ -64,6 +68,7 @@ public class GamePanel extends JPanel implements Runnable {
     private boolean inBattle = false;
 
     public GamePanel(GameWindow window) {
+		this.window = window;
         setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -103,7 +108,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void startGameLoop() {
-        gameThread = new Thread(this);
+gameThread = new Thread(this);
         gameThread.start();
     }
 
@@ -125,10 +130,12 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void update() {
-        if (inBattle) return;
-        if (currentState != null) {
-            currentState.update(this);
-        }
+
+		if (inBattle) return;
+
+		if (currentState != null) {
+			currentState.update(this);
+		}
     }
     
     @Override
@@ -182,6 +189,27 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     // --- Metodi Pubblici per la Gestione degli Stati ---
+
+	public void goToBattle(long now) {
+
+		cameraX = player.x * TILE_SIZE * SCALE - WIDTH / 2;
+		cameraY = player.y * TILE_SIZE * SCALE - HEIGHT / 2;
+		player.setLastMoveTime(now);
+
+		if (worldMap.isGrassTile(player.x, player.y)) {
+
+			double pokemonEncounterChance = 0.2;
+			if (Math.random() < pokemonEncounterChance) {
+				inBattle = true;
+				Pokemon wildPokemon = new Pokemon("Bulbasaur", 5, 10, 10, 10, 15);
+				Pokemon playerPokemon = player.getParty().getPokemon(0); // Prende il primo Pokémon della squadra del giocatore
+				BattleManager battleManager = new BattleManager(window, this, player);
+				battleManager.startBattle(playerPokemon, wildPokemon);
+
+			}
+		}
+
+	}
 
     public void changeState(GameState newStateKey) {
         if (currentState != null) currentState.onExit();

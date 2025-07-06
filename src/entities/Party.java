@@ -94,6 +94,7 @@ public class Party {
     }
 
     public boolean saveToFile() {
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/assets/saves/" + this.saveFileName))) {
             for (Pokemon p : this.pokemonList) {
                 String line = String.join(",",

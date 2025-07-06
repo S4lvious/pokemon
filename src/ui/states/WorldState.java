@@ -5,12 +5,19 @@ import java.awt.event.KeyEvent;
 
 import engine.InputHandler;
 import entities.Player;
+import entities.Pokemon;
 import main.GamePanel;
 import main.GameState;
 import world.WorldMap;
 
+import battle.BattleManager;
+
 
 public class WorldState implements IGameState {
+	
+	// stato di battaglia
+
+	private static boolean inBattle = false;
 
     private Player player;
     private WorldMap worldMap;
@@ -54,17 +61,25 @@ public class WorldState implements IGameState {
             wantsToMove = true;
             dx = 1; dy = 0;
         }
+
+		boolean mooved = false;
         
         // La logica di movimento effettiva, che rispetta il cooldown
         if (wantsToMove && (now - player.getLastMoveTime() >= player.getMoveCooldown())) {
             if (worldMap.isWalkable(player.x + dx, player.y + dy)) {
                 player.setLastMoveTime(now);
                 player.move(dx, dy);
+				mooved = true;
                 if (worldMap.isGrassTile(player.x, player.y)) { 
                     // Logica per l'incontro con Pokémon selvatici
                 }
             }
         }
+
+		if (mooved) {
+
+			panel.goToBattle(now);
+		}
         
         // Infine, aggiorniamo lo stato interno del giocatore (animazione)
         player.update();
