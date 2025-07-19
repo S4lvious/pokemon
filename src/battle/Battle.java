@@ -2,30 +2,44 @@ package battle;
 
 import entities.Pokemon;
 
-public class Battle {
+public final class Battle {
+
     private final Pokemon playerPokemon;
     private final Pokemon enemyPokemon;
-    private boolean battleOver = false;
+    private boolean battleOver;
 
     public Battle(Pokemon playerPokemon, Pokemon enemyPokemon) {
         this.playerPokemon = playerPokemon;
         this.enemyPokemon = enemyPokemon;
+        this.battleOver = false;
     }
 
     public String playerAttack() {
         if (battleOver) return "La battaglia è già finita.";
+
         int damage = playerPokemon.calculateDamage(enemyPokemon);
         enemyPokemon.takeDamage(damage);
         checkBattleOver();
-        return playerPokemon.getName() + " infligge " + damage + " danni a " + enemyPokemon.getName() + "!";
+
+        return formatAttackMessage(playerPokemon, enemyPokemon, damage);
     }
 
+    public String enemyAttack() {
+        if (battleOver) return "La battaglia è già finita.";
+
+        int damage = enemyPokemon.calculateDamage(playerPokemon);
+        playerPokemon.takeDamage(damage);
+        checkBattleOver();
+
+        return formatAttackMessage(enemyPokemon, playerPokemon, damage);
+    }
 
     public String performTurn() {
         if (battleOver) return "La battaglia è finita.";
 
         StringBuilder log = new StringBuilder();
         boolean playerFirst = playerPokemon.getSpeed() >= enemyPokemon.getSpeed();
+
         if (playerFirst) {
             log.append(playerAttack()).append("\n");
             if (!enemyPokemon.isFainted()) {
@@ -33,25 +47,20 @@ public class Battle {
             }
         } else {
             log.append(enemyAttack()).append("\n");
-            if (!enemyPokemon.isFainted()) {
+            if (!playerPokemon.isFainted()) {
                 log.append(playerAttack()).append("\n");
             }
         }
-        return log.toString();
-    }
 
-    public String enemyAttack() {
-        if (battleOver) return "La battaglia è già finita.";
-        int damage = enemyPokemon.calculateDamage(playerPokemon);
-        playerPokemon.takeDamage(damage);
-        checkBattleOver();
-        return enemyPokemon.getName() + " infligge " + damage + " danni a " + playerPokemon.getName() + "!";
+        return log.toString().trim();
     }
 
     private void checkBattleOver() {
-        if (enemyPokemon.isFainted() || playerPokemon.isFainted()) {
-            battleOver = true;
-        }
+        battleOver = playerPokemon.isFainted() || enemyPokemon.isFainted();
+    }
+
+    private String formatAttackMessage(Pokemon attacker, Pokemon defender, int damage) {
+        return attacker.getName() + " infligge " + damage + " danni a " + defender.getName() + "!";
     }
 
     public boolean isBattleOver() {

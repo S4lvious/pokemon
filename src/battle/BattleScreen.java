@@ -14,14 +14,14 @@ import java.io.IOException;
 
 public class BattleScreen extends JPanel {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final Battle battle;
-    private final String[] menu = { "Attacca", "Fuggi", "Cattura" };
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private final Battle battle;
+    private final String[] menu = {"Attacca", "Fuggi", "Cattura"};
     private final Player player;
     private int selected = 0;
-    
+
     private String endMessage = "";
     private boolean battleOver = false;
 
@@ -40,7 +40,6 @@ public class BattleScreen extends JPanel {
 
     private boolean hidePokemon = false;
     private boolean hideEnemyPokemon = false;
-
 
 
     public BattleScreen(Pokemon playerPokemon, Pokemon enemyPokemon, GameWindow parent, GamePanel parentPanel, Player player) {
@@ -67,7 +66,7 @@ public class BattleScreen extends JPanel {
         requestFocusInWindow();
         setupInput();
 
-        Timer  timer = new Timer(1000 / 60, e -> repaint());
+        Timer timer = new Timer(1000 / 60, e -> repaint());
         timer.start();
     }
 
@@ -75,11 +74,11 @@ public class BattleScreen extends JPanel {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("UP"), "up");
         getActionMap().put("up", new AbstractAction() {
             /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
+             *
+             */
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selected = (selected - 1 + menu.length) % menu.length;
                 repaint();
@@ -89,11 +88,11 @@ public class BattleScreen extends JPanel {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("DOWN"), "down");
         getActionMap().put("down", new AbstractAction() {
             /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
+             *
+             */
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selected = (selected + 1) % menu.length;
                 repaint();
@@ -103,11 +102,11 @@ public class BattleScreen extends JPanel {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ENTER"), "enter");
         getActionMap().put("enter", new AbstractAction() {
             /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
+             *
+             */
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (battleOver) {
                     returnToGame(); // torna solo dopo aver visto il messaggio
@@ -121,7 +120,7 @@ public class BattleScreen extends JPanel {
 
     private void saveParty() {
         try {
-        	player.getParty().saveToFile();
+            player.getParty().saveToFile();
             System.out.println("Squadra salvata con successo!");
         } catch (Exception e) {
             System.err.println("Errore nel salvare la squadra: " + e.getMessage());
@@ -162,65 +161,77 @@ public class BattleScreen extends JPanel {
     }
 
 
-        private void updateCaptureAnimation(Graphics2D g2d) {
-                long now = System.currentTimeMillis();
-                int spriteWidth = 250;
-                int spriteHeight = 250;
+    private void updateCaptureAnimation(Graphics2D g2d) {
+        long now = System.currentTimeMillis();
 
-                int trainerX = 30;
-                int trainerY = getHeight() - spriteHeight;
-                int pokeballX = getWidth() - 250;
-                int pokeballY = 250;
-                boolean captureSuccessful = false;
+        final int spriteWidth = 250;
+        final int spriteHeight = 250;
+        final int trainerX = 30;
+        final int trainerY = getHeight() - spriteHeight;
+        final int pokeballX = getWidth() - 250;
+        final int pokeballY = 250;
 
-            switch (captureStep) {
-                case 0: // mostra allenatore che lancia
-                    int frameIndex = (int) ((now - captureTimer) / 150) % trainerThrowSprites.length;
-                    if (frameIndex == 0 && !hidePokemon) {
-                        hidePokemon = true; 
-                    }
-                    g2d.drawImage(trainerThrowSprites[frameIndex], trainerX, trainerY, spriteWidth, spriteHeight, null);
-                    
-                    if (now - captureTimer > 600) {
-                        captureStep++;
-                        captureTimer = now;
-                    }
-                    break;
-                case 1: // mostra pokeball in volo
-                    g2d.drawImage(pokeballSprite, pokeballX - 50, pokeballY - 100, 64, 64, null);
-                    if (now - captureTimer > 500) {
-                        captureStep++;
-                        captureTimer = now;
-                        hideEnemyPokemon = true; 
-                    }
-                    break;
-
-                case 2: // pokémon scompare, pokéball a terra
-                    g2d.drawImage(groundPokeballSprite, pokeballX, pokeballY, 64, 64, null);
-                    if (now - captureTimer > 700) {
-                        captureStep++;
-                        captureTimer = now;
-                        captureSuccessful = Math.random() < 0.6; // probabilità di cattura
-                        if (captureSuccessful) {
-                        	player.getParty().addPokemon(battle.getEnemyPokemon());
-                            endMessage = "Hai catturato " + battle.getEnemyPokemon().getName() + "!";
-                            battleOver = true;
-
-                        } else {
-                            endMessage = "Oh no! Il Pokémon è fuggito!"; // Per semplificare.
-                            battleOver = true;
-
-                        }
-                    }
-                    break;
-            }
+        switch (captureStep) {
+            case 0 -> handleTrainerThrow(g2d, now, trainerX, trainerY, spriteWidth, spriteHeight);
+            case 1 -> handlePokeballFlight(g2d, now, pokeballX, pokeballY);
+            case 2 -> handleCaptureResult(g2d, now, pokeballX, pokeballY);
         }
+    }
+
+
+    private void handleTrainerThrow(Graphics2D g2d, long now, int x, int y, int width, int height) {
+        int frameIndex = (int) ((now - captureTimer) / 150) % trainerThrowSprites.length;
+
+        if (frameIndex == 0 && !hidePokemon) {
+            hidePokemon = true;
+        }
+
+        g2d.drawImage(trainerThrowSprites[frameIndex], x, y, width, height, null);
+
+        if (now - captureTimer > 600) {
+            advanceCaptureStep(now);
+        }
+    }
+
+    private void handlePokeballFlight(Graphics2D g2d, long now, int x, int y) {
+        g2d.drawImage(pokeballSprite, x - 50, y - 100, 64, 64, null);
+
+        if (now - captureTimer > 500) {
+            hideEnemyPokemon = true;
+            advanceCaptureStep(now);
+        }
+    }
+
+    private void handleCaptureResult(Graphics2D g2d, long now, int x, int y) {
+        g2d.drawImage(groundPokeballSprite, x, y, 64, 64, null);
+
+        if (now - captureTimer > 700) {
+            boolean captureSuccessful = Math.random() < 0.6;
+
+            if (captureSuccessful) {
+                player.getParty().addPokemon(battle.getEnemyPokemon());
+                endMessage = "Hai catturato " + battle.getEnemyPokemon().getName() + "!";
+            } else {
+                endMessage = "Oh no! Il Pokémon è fuggito!";
+            }
+
+            battleOver = true;
+            advanceCaptureStep(now);
+        }
+    }
+
+    private void advanceCaptureStep(long now) {
+        captureStep++;
+        captureTimer = now;
+    }
+
+
     private void returnToGame() {
-        
+
         saveParty();
 
         parentPanel.setInBattle(false);
-        parentPanel.resetInput(); 
+        parentPanel.resetInput();
         parent.setContentPane(parentPanel);
         parent.revalidate();
         parent.repaint();
@@ -236,95 +247,100 @@ public class BattleScreen extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Disegna lo sfondo
+        drawBackground(g2d);
+        drawPokemonSprites(g2d);
+        drawEnemyInfoBox(g2d);
+        drawPlayerInfoBox(g2d);
+        drawCommandBox(g2d);
+        drawEndMessage(g2d);
+    }
+
+    private void drawBackground(Graphics2D g2d) {
         if (background != null) {
             g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
         }
+    }
 
-        // Pokémon
-        Pokemon player = battle.getPlayerPokemon();
-        Pokemon enemy = battle.getEnemyPokemon();
-
+    private void drawPokemonSprites(Graphics2D g2d) {
         int spriteWidth = 250;
         int spriteHeight = 250;
 
         int playerX = 30;
         int playerY = getHeight() - spriteHeight;
-
         int enemyX = getWidth() - spriteWidth - 150;
         int enemyY = 250;
 
-        // Cattura pokemon
-
         if (capturing) {
             updateCaptureAnimation(g2d);
-        } 
+        }
 
         if (!capturing || !hidePokemon) {
-            if (player.getSprite() != null)
-                g2d.drawImage(player.getSprite(), playerX, playerY, spriteWidth, spriteHeight, null);
-        } 
-        if (!capturing || !hideEnemyPokemon) {
-            if (enemy.getSprite() != null)
-                g2d.drawImage(enemy.getSprite(), enemyX, enemyY, spriteWidth, spriteHeight, null);
+            BufferedImage playerSprite = battle.getPlayerPokemon().getSprite();
+            if (playerSprite != null) {
+                g2d.drawImage(playerSprite, playerX, playerY, spriteWidth, spriteHeight, null);
+            }
         }
-        // Posizione sopra lo sprite nemico
-        int infoBoxWidth = 300;
-        int infoBoxHeight = 90;
-        int infoBoxX = enemyX;
-        int infoBoxY = enemyY - infoBoxHeight - 20;
 
-        // Disegno del box
+        if (!capturing || !hideEnemyPokemon) {
+            BufferedImage enemySprite = battle.getEnemyPokemon().getSprite();
+            if (enemySprite != null) {
+                g2d.drawImage(enemySprite, enemyX, enemyY, spriteWidth, spriteHeight, null);
+            }
+        }
+    }
+
+    private void drawEnemyInfoBox(Graphics2D g2d) {
+        Pokemon enemy = battle.getEnemyPokemon();
+        int spriteWidth = 250;
+        int enemyX = getWidth() - spriteWidth - 150;
+        int enemyY = 250;
+
+        int boxWidth = 300;
+        int boxHeight = 90;
+        int boxX = enemyX;
+        int boxY = enemyY - boxHeight - 20;
+
+        drawInfoBox(g2d, boxX, boxY, boxWidth, boxHeight, enemy.getName(), enemy.getLevel(), enemy.getCurrentHp(), enemy.getMaxHp(), Color.RED);
+    }
+
+    private void drawPlayerInfoBox(Graphics2D g2d) {
+        Pokemon player = battle.getPlayerPokemon();
+        int spriteHeight = 250;
+        int playerX = 30;
+        int playerY = getHeight() - spriteHeight;
+
+        int boxWidth = 300;
+        int boxHeight = 90;
+        int boxX = playerX;
+        int boxY = playerY - boxHeight - 20;
+
+        drawInfoBox(g2d, boxX, boxY, boxWidth, boxHeight, player.getName(), player.getLevel(), player.getCurrentHp(), player.getMaxHp(), Color.GREEN);
+    }
+
+    private void drawInfoBox(Graphics2D g2d, int x, int y, int width, int height, String name, int level, int currentHp, int maxHp, Color hpColor) {
         g2d.setColor(new Color(250, 250, 250));
-        g2d.fillRoundRect(infoBoxX, infoBoxY, infoBoxWidth, infoBoxHeight, 12, 12);
+        g2d.fillRoundRect(x, y, width, height, 12, 12);
         g2d.setColor(Color.BLACK);
-        g2d.drawRoundRect(infoBoxX, infoBoxY, infoBoxWidth, infoBoxHeight, 12, 12);
+        g2d.drawRoundRect(x, y, width, height, 12, 12);
 
-        // Testo
         g2d.setFont(new Font("Arial", Font.BOLD, 18));
-        g2d.drawString(enemy.getName() + "  Lv." + enemy.getLevel(), infoBoxX + 10, infoBoxY + 25);
+        g2d.drawString(name + "  Lv." + level, x + 10, y + 25);
 
-        // Barra HP più spessa
         int maxBarWidth = 220;
-        int hpWidth = (int) ((enemy.getCurrentHp() / (float) enemy.getMaxHp()) * maxBarWidth);
-        g2d.setColor(Color.RED);
-        g2d.fillRect(infoBoxX + 10, infoBoxY + 40, hpWidth, 15);
+        int hpWidth = (int) ((currentHp / (float) maxHp) * maxBarWidth);
+        g2d.setColor(hpColor);
+        g2d.fillRect(x + 10, y + 40, hpWidth, 15);
         g2d.setColor(Color.BLACK);
-        g2d.drawRect(infoBoxX + 10, infoBoxY + 40, maxBarWidth, 15);
+        g2d.drawRect(x + 10, y + 40, maxBarWidth, 15);
+    }
 
-        int playerInfoBoxWidth = 300;
-        int playerInfoBoxHeight = 90;
-        int playerInfoBoxX = playerX;
-        int playerInfoBoxY = playerY - playerInfoBoxHeight - 20;
-
-
-
-
-        // Disegno del box
-        g2d.setColor(new Color(250, 250, 250));
-        g2d.fillRoundRect(playerInfoBoxX, playerInfoBoxY, playerInfoBoxWidth, playerInfoBoxHeight, 12, 12);
-        g2d.setColor(Color.BLACK);
-        g2d.drawRoundRect(playerInfoBoxX, playerInfoBoxY, playerInfoBoxWidth, playerInfoBoxHeight, 12, 12);
-
-        // Testo
-        g2d.setFont(new Font("Arial", Font.BOLD, 18));
-        g2d.drawString(player.getName() + "  Lv." + player.getLevel(), playerInfoBoxX + 10, playerInfoBoxY + 25);
-
-        // Barra HP
-        int playerMaxBarWidth = 220;
-        int playerHpWidth = (int) ((player.getCurrentHp() / (float) player.getMaxHp()) * playerMaxBarWidth);
-        g2d.setColor(Color.GREEN);
-        g2d.fillRect(playerInfoBoxX + 10, playerInfoBoxY + 40, playerHpWidth, 15);
-        g2d.setColor(Color.BLACK);
-        g2d.drawRect(playerInfoBoxX + 10, playerInfoBoxY + 40, playerMaxBarWidth, 15);
-
-        // Box inferiore comandi
-        g2d.setColor(new Color(20, 20, 20, 220));
+    private void drawCommandBox(Graphics2D g2d) {
         int boxHeight = 120;
         int boxY = getHeight() - boxHeight;
 
         g2d.setColor(new Color(20, 20, 20, 220));
         g2d.fillRoundRect(0, boxY, getWidth(), boxHeight, 0, 0);
+
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         g2d.drawString("Scegli un'azione:", 30, boxY + 30);
@@ -333,19 +349,28 @@ public class BattleScreen extends JPanel {
             g2d.setColor(i == selected ? Color.YELLOW : Color.WHITE);
             g2d.drawString((i + 1) + ". " + menu[i], 50, boxY + 60 + i * 25);
         }
-        if (battleOver && endMessage != null) {
-            g2d.setColor(new Color(0, 0, 0, 200));
-            g2d.fillRoundRect(80, getHeight() / 2 - 60, getWidth() - 160, 120, 20, 20);
-
-            g2d.setColor(Color.WHITE);
-            g2d.setFont(new Font("Arial", Font.BOLD, 20));
-            FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(endMessage);
-            g2d.drawString(endMessage, (getWidth() - textWidth) / 2, getHeight() / 2 + 5);
-
-            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
-            g2d.drawString("Premi INVIO per continuare...", getWidth() / 2 - 100, getHeight() / 2 + 30);
-        }
-
     }
+
+    private void drawEndMessage(Graphics2D g2d) {
+        if (!battleOver || endMessage == null) return;
+
+        int boxWidth = getWidth() - 160;
+        int boxHeight = 120;
+        int boxX = 80;
+        int boxY = getHeight() / 2 - 60;
+
+        g2d.setColor(new Color(0, 0, 0, 200));
+        g2d.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 20, 20);
+
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(endMessage);
+        g2d.drawString(endMessage, (getWidth() - textWidth) / 2, getHeight() / 2 + 5);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.drawString("Premi INVIO per continuare...", getWidth() / 2 - 100, getHeight() / 2 + 30);
+    }
+
+
 }

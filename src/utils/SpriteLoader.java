@@ -1,20 +1,24 @@
 package utils;
 
+import static javax.imageio.ImageIO.read;
+
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 
-public class SpriteLoader {
+public final class SpriteLoader {
+
+    private SpriteLoader() {
+        // Classe utility: costruttore privato per evitare istanziazione
+    }
+
     public static BufferedImage load(String path) {
-        try {
-            InputStream is = SpriteLoader.class.getResourceAsStream(path);
+        try (InputStream is = SpriteLoader.class.getResourceAsStream(path)) {
             if (is == null) {
-                throw new IllegalArgumentException("Resource not found: " + path);
-            } else {
-                return javax.imageio.ImageIO.read(is);
+                throw new IllegalArgumentException("Risorsa non trovata: " + path);
             }
+            return read(is);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to load sprite: " + path, e);
+            throw new RuntimeException("Impossibile caricare lo sprite: " + path, e);
         }
     }
 }

@@ -2,31 +2,28 @@ package engine;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InputHandler extends KeyAdapter {
 
-    private boolean[] keys = new boolean[256];
+    private final Map<Integer, Boolean> keys = new HashMap<>();
 
     @Override
     public void keyPressed(KeyEvent e) {
-        keys[e.getKeyCode()] = true;
+        keys.put(e.getKeyCode(), true);
     }
-
-    public void reset() {
-        for (int i = 0; i < keys.length; i++) {
-            if (keys[i]) {
-                keys[i] = false;
-            }
-        }
-    }
-    
 
     @Override
     public void keyReleased(KeyEvent e) {
-        keys[e.getKeyCode()] = false;
+        keys.put(e.getKeyCode(), false);
     }
 
     public boolean isPressed(int keyCode) {
-        return keys[keyCode];
+        return keys.getOrDefault(keyCode, false);
+    }
+
+    public void reset() {
+        keys.replaceAll((k, v) -> false);
     }
 }
