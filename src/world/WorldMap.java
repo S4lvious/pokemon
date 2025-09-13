@@ -20,8 +20,8 @@ public class WorldMap {
         groundLayer = MapLoader.loadTMXLayer(path, "Livello tile 1", width, height);
         overlayLayer = MapLoader.loadTMXLayer(path, "Livello tile 2", width, height);
         collisionMap = MapLoader.loadCollisionMap(path, width, height);
-        //grassTileIds = MapLoader.loadGrassTiles("src/assets/maps/Tileset.tsx");
-        grassTileIds = MapLoader.loadGrassTiles("assets/maps/Tileset.tsx");
+        grassTileIds = MapLoader.loadGrassTiles("src/assets/maps/Tileset.tsx");
+        //grassTileIds = MapLoader.loadGrassTiles("assets/maps/Tileset.tsx");
     }
 
         public boolean isGrassTile(int x, int y) {
